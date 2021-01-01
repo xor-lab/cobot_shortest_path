@@ -100,47 +100,134 @@ class WarehouseDateProcessing():
         # Merge dictionaries
         self.V = {**self.V__D, **self.V__S}
 
-    def CalculateDistance(self):
 
-        file_path = r'data/distances/' + os.path.splitext(os.path.basename(self.Warehouse.InstanceFile))[0] + '.json'
+    def CalculateDistanceAll(self):
+        print("get all distances begin")
+        start = time.time()
+        d_ij = {}
+        d_ij_dict = {}
+        paths = []
+        paths.append('data/3240_pods_distances_data/-1/json/')
+        paths.append('data/3240_pods_distances_data/0/json/')
+        paths.append('data/3240_pods_distances_data/1/json/')
+        paths.append('data/3240_pods_distances_data/2/json/')
+        paths.append('data/3240_pods_distances_data/3/json/')
+        paths.append('data/3240_pods_distances_data/4/json/')
+        paths.append('data/3240_pods_distances_data/5/json/')
+        paths.append('data/3240_pods_distances_data/6/json/')
+        paths.append('data/3240_pods_distances_data/7/json/')
 
-        if not path.exists(file_path):
-            # Create d_ij
-            # d_ij = tupledict()
-            d_ij = {}
+        files = []
 
-            # Loop over all nodes
-            for key_i, node_i in self.V.items():
-                for key_j, node_j in self.V.items():
-                    source = 'w' + node_i.GetPickWaypoint().ID
-                    target = 'w' + node_j.GetPickWaypoint().ID
+        for path_item in paths:
+            # r=root, d=directories, f = files
+            for r, d, f in os.walk(path_item):
+                for file in f:
+                    if '.json' in file:
+                        files.append(os.path.join(r, file))
 
-                    # Calc distance with weighted shortest path
-                    d_ij[(key_i, key_j)] = nx.shortest_path_length(self.Graph, source=source, target=target,
-                                                                   weight='weight')
-
-            # Parse and save
-            d_ij_dict = {}
-            for key, value in d_ij.items():
-                i, j = key
-                if i not in d_ij_dict:
-                    d_ij_dict[i] = {}
-                d_ij_dict[i][j] = value
-
-            with open(file_path, 'w') as fp:
-                json.dump(d_ij_dict, fp)
-
-        else:
+        for file_path in files:
+            #print(file_path)
             # Load and deparse
             with open(file_path, 'r') as fp:
+                d_ij_dict.clear()
                 d_ij_dict = json.load(fp)
-            print('d_ij file %s loaded' % file_path)
-            d_ij = {}
+            #print('d_ij file %s loaded' % file_path)
             for i, values in d_ij_dict.items():
                 for j, dist in values.items():
                     d_ij[i, j] = dist
 
+        end = time.time()
+        print('get all distances end - %s seconds elapsed'%(str(end - start)))
+    
         return d_ij
+
+    def CalculateDistance(self):
+
+        if SKUS[0] != "3240":
+            file_path = r'data/distances/' + os.path.splitext(os.path.basename(self.Warehouse.InstanceFile))[0] + '.json'
+
+            if not path.exists(file_path):
+                # Create d_ij
+                # d_ij = tupledict()
+                d_ij = {}
+
+                # Loop over all nodes
+                for key_i, node_i in self.V.items():
+                    for key_j, node_j in self.V.items():
+                        source = 'w' + node_i.GetPickWaypoint().ID
+                        target = 'w' + node_j.GetPickWaypoint().ID
+
+                        # Calc distance with weighted shortest path
+                        d_ij[(key_i, key_j)] = nx.shortest_path_length(self.Graph, source=source, target=target,
+                                                                       weight='weight')
+
+                # Parse and save
+                d_ij_dict = {}
+                for key, value in d_ij.items():
+                    i, j = key
+                    if i not in d_ij_dict:
+                        d_ij_dict[i] = {}
+                    d_ij_dict[i][j] = value
+
+                with open(file_path, 'w') as fp:
+                    json.dump(d_ij_dict, fp)
+
+            else:
+                # Load and deparse
+                with open(file_path, 'r') as fp:
+                    d_ij_dict = json.load(fp)
+                print('d_ij file %s loaded' % file_path)
+                d_ij = {}
+                for i, values in d_ij_dict.items():
+                    for j, dist in values.items():
+                        d_ij[i, j] = dist
+        else:
+            d_ij = {}
+            d_ij = self.CalculateDistanceAll()
+        return d_ij
+
+    #def CalculateDistance(self):
+
+    #    file_path = r'data/distances/' + os.path.splitext(os.path.basename(self.Warehouse.InstanceFile))[0] + '.json'
+
+    #    if not path.exists(file_path):
+    #        # Create d_ij
+    #        # d_ij = tupledict()
+    #        d_ij = {}
+
+    #        # Loop over all nodes
+    #        for key_i, node_i in self.V.items():
+    #            for key_j, node_j in self.V.items():
+    #                source = 'w' + node_i.GetPickWaypoint().ID
+    #                target = 'w' + node_j.GetPickWaypoint().ID
+
+    #                # Calc distance with weighted shortest path
+    #                d_ij[(key_i, key_j)] = nx.shortest_path_length(self.Graph, source=source, target=target,
+    #                                                               weight='weight')
+
+    #        # Parse and save
+    #        d_ij_dict = {}
+    #        for key, value in d_ij.items():
+    #            i, j = key
+    #            if i not in d_ij_dict:
+    #                d_ij_dict[i] = {}
+    #            d_ij_dict[i][j] = value
+
+    #        with open(file_path, 'w') as fp:
+    #            json.dump(d_ij_dict, fp)
+
+    #    else:
+    #        # Load and deparse
+    #        with open(file_path, 'r') as fp:
+    #            d_ij_dict = json.load(fp)
+    #        print('d_ij file %s loaded' % file_path)
+    #        d_ij = {}
+    #        for i, values in d_ij_dict.items():
+    #            for j, dist in values.items():
+    #                d_ij[i, j] = dist
+
+    #    return d_ij
 
 
 class Demo():
@@ -1431,10 +1518,22 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
 
 
 if __name__ == "__main__":
-    SKUS = ["24"]  # options: 24 and 360
-    SUBSCRIPTS = ["_b"]  #, "_a", "_b"
-    NUM_ORDERSS = [10]  # [10,
-    MEANS = ["5"]  #"1x6",
+    #SKUS = ["24"]  # options: 24 and 360
+    #SUBSCRIPTS = ["_b"]  #, "_a", "_b"
+    #NUM_ORDERSS = [10]  # [10,
+    #MEANS = ["5"]  #"1x6",
+
+    #SKUS = ["3240"]  # options: 24 and 360
+    #SUBSCRIPTS = [""]  #, "_b", "_c"
+    #NUM_ORDERSS = [100]  # [10,
+    #MEANS = ["1x6"]  #"5",
+
+    SKUS = ["24", "360"]  # options: 24 and 360
+    SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
+    NUM_ORDERSS = [10, 20]  
+    MEANS = ["1x6", "5"]  #"5",
+    ITERS_NUMS = [100, 1000, 10000, 100000, 1000000]
+
     instance_sols = {}
     model_sols = {}
     for SKU in SKUS:
@@ -1457,36 +1556,39 @@ if __name__ == "__main__":
                     orders = {}
                     orders['{}_5'.format(str(NUM_ORDERS))] = r'data/sku{}/orders_{}_mean_{}_sku_{}{}.xml'.format(SKU, str(NUM_ORDERS), MEAN, SKU, SUBSCRIPT)
                     sols_and_runtimes = {}
-                    runtimes = [0, 4, 8, 13, 20, 30, 40, 50, 60, 80, 100, 120]
-                    runtimes=[200]
+                    #runtimes = [0, 4, 8, 13, 20, 30, 40, 50, 60, 80, 100, 120]
+                    #runtimes=[0]
+                    runtimes=[1800]
                     for runtime in runtimes:
-                        np.random.seed(523381)
-                        if runtime == 0:
-                            ils = GreedyMixedShelves()
-                            ils.apply_greedy_heuristic()
-                        else:
-                            ils = VariableNeighborhoodSearch()
-                            ils.reduced_vns(max_iters=1500, t_max=runtime, k_max=3)
-                            #ils.perform_ils(num_iters=1500, t_max=runtime)
-                            #vns = VariableNeighborhoodSearch()
-                            #vns.reduced_vns(1500, runtime, 2)
-                        #STORAGE_STRATEGY = "dedicated" if vns.is_storage_dedicated else "mixed"
-                        #print("Now optimizing: SKU={}; Order={}; Subscript={}".format(SKU, NUM_ORDERS, SUBSCRIPT))
-                        #vns.write_solution_to_xml(
-                        #    'solutions/orders_{}_mean_{}_sku_{}{}_{}.xml'.format(str(NUM_ORDERS), MEAN, SKU,
-                        #                                                         SUBSCRIPT, STORAGE_STRATEGY)
-                        #)
-                        #sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
-                        #                               batch in vns.batches.values()})
-                    print(sols_and_runtimes)
-                    instance_sols[(SKU, SUBSCRIPT, NUM_ORDERS)] = sols_and_runtimes
-                    model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "ILS")] = ils.get_fitness_of_solution()
+                        for ITER_NUM_ITEM in ITERS_NUMS:
+                            np.random.seed(523381)
+                            if runtime == 0:
+                                ils = GreedyMixedShelves()
+                                ils.apply_greedy_heuristic()
+                            else:
+                                #ils = VariableNeighborhoodSearch()
+                                #ils.reduced_vns(max_iters=1500, t_max=runtime, k_max=3)
+                                #ils.perform_ils(num_iters=1500, t_max=runtime)
+                                vns = VariableNeighborhoodSearch()
+                                vns.reduced_vns(ITER_NUM_ITEM, runtime, 2)
+
+                            STORAGE_STRATEGY = "dedicated" if vns.is_storage_dedicated else "mixed"
+                            print("Now optimizing: SKU={}; Order={}; Subscript={}".format(SKU, NUM_ORDERS, SUBSCRIPT))
+                            vns.write_solution_to_xml(
+                                'solutions/orders_{}_mean_{}_sku_{}{}_{}_iter_{}.xml'.format(str(NUM_ORDERS), MEAN, SKU,
+                                                                                     SUBSCRIPT, STORAGE_STRATEGY, ITER_NUM_ITEM)
+                            )
+                    #        sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
+                    #                                       batch in vns.batches.values()})
+                    #print(sols_and_runtimes)
+                    #instance_sols[(SKU, SUBSCRIPT, NUM_ORDERS)] = sols_and_runtimes
+                    ##model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "ILS")] = ils.get_fitness_of_solution()
                     #model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "VNS")] = vns.get_fitness_of_solution()
-                    # except Exception as e:
-                    #     print(e)
-                    #     continue
+                    ## except Exception as e:
+                    ##     print(e)
+                    ##     continue
 
     #with open('../analyse_solution/solutions/mixed360_random_ls_not_random_twoopt.pickle', 'wb') as handle:
     #    pickle.dump(instance_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open('../analyse_solution/solutions/mixed_fitness_ils_vns.pickle', 'wb') as handle:
-        pickle.dump(model_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('../analyse_solution/solutions/mixed_fitness_ils_vns.pickle', 'wb') as handle:
+    #    pickle.dump(model_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)

@@ -859,12 +859,12 @@ class IteratedLocalSearch(SimulatedAnnealing):
             print("Fitness after iteration of ILS: ", self.get_fitness_of_solution())
         self.batches = best_sol
 
-
 if __name__ == "__main__":
     SKUS = ["360"]  # options: 24 and 360
     SUBSCRIPTS = [""]
-    NUM_ORDERSS = [20]
-    MEANS = ["5"]
+    NUM_ORDERSS = [10]
+    MEANS = ["1x6"]
+    #MEANS = ["5"]
     instance_sols = {}
     for SKU in SKUS:
         for SUBSCRIPT in SUBSCRIPTS:
@@ -887,16 +887,19 @@ if __name__ == "__main__":
                         orders = {}
                         orders['{}_5'.format(str(NUM_ORDERS))] = r'data/sku{}/orders_{}_mean_{}_sku_{}{}.xml'.format(SKU, str(NUM_ORDERS), MEAN, SKU, SUBSCRIPT)
                         sols_and_runtimes = {}
-                        runtimes = [5, 10, 20, 40, 80, 140]
-                        runtimes = [40]  # for debugging
+                        #runtimes = [5, 10, 20, 40, 80, 140]
+                        #runtimes = [40]  # for debugging
+                        runtimes=[200]
                         for runtime in runtimes:
                             np.random.seed(52302381)
                             if runtime == 0:
                                 ils = GreedyHeuristic()
                                 ils.apply_greedy_heuristic()
                             else:
-                                ils = IteratedLocalSearch()
-                                ils.perform_ils(1500, runtime)
+                                #ils = IteratedLocalSearch()
+                                #ils.perform_ils(1500, runtime)
+                                ils = VariableNeighborhoodSearch()
+                                ils.reduced_vns(max_iters=1500, t_max=runtime, k_max=3)
                             STORAGE_STRATEGY = "dedicated" if ils.is_storage_dedicated else "mixed"
                             ils.write_solution_to_xml('solutions/orders_{}_mean_{}_sku_{}{}_{}.xml'.format(str(NUM_ORDERS),
                                                                                                           MEAN, SKU, SUBSCRIPT,
@@ -908,6 +911,6 @@ if __name__ == "__main__":
                         continue
                     instance_sols[(SKU, SUBSCRIPT, NUM_ORDERS)] = sols_and_runtimes
 
-    with open('../analyse_solution/solutions/dedicated.pickle', 'wb') as handle:
-        pickle.dump(instance_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('../analyse_solution/solutions/dedicated.pickle', 'wb') as handle:
+    #    pickle.dump(instance_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
