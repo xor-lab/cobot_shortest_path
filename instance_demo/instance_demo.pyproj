@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0c1b2faf-ac4d-42b6-8552-e6afe7a261a5</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>agv_routing_mixed.py</StartupFile>
+    <StartupFile>agv_routing_mixed_1_10.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -24,6 +24,8 @@
   <ItemGroup>
     <Compile Include="agv_routing_dedicated.py" />
     <Compile Include="agv_routing_mixed.py" />
+    <Compile Include="agv_routing_mixed_1_10.py" />
+    <Compile Include="agv_routing_mixed_run_dedicated.py" />
     <Compile Include="agv_routing_split_orders.py" />
     <Compile Include="instance_demo.py" />
     <Compile Include="tests.py" />

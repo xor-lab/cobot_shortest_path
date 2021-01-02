@@ -1479,7 +1479,7 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
             weight_dict = self.get_weight_per_batch()
         print("fitness after perturbation: ", self.get_fitness_of_solution())
 
-    def reduced_vns(self, max_iters, t_max, k_max):
+    def reduced_vns(self, max_iters, t_max, k_max, no_improve_steps):
         """
         :param max_iters:  maximum number of iterations
         :param t_max: maximum cpu time
@@ -1492,10 +1492,13 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
         best_fit = curr_fit
         curr_sol = copy.deepcopy(self.batches)
         best_sol = copy.deepcopy(curr_sol)
+
+        iter_flag = 0
+
         while iters < max_iters and t < t_max:
             print("Start iteration {} of VNS".format(str(iters)))
             k = 1
-            while k < k_max:
+            while k < k_max and iter_flag < no_improve_steps:
                 self.shake(k)
                 self.optimized_perturbation()
                 self.randomized_local_search(max_iters=20, k=k)
@@ -1504,18 +1507,20 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
                     curr_fit = neighbor_fit  # accept new solution
                     curr_sol = copy.deepcopy(self.batches)
                     k = 1
+                    iter_flag = 0
+                    print("iter_flag reset!")
                     if curr_fit < best_fit:
                         best_sol = copy.deepcopy(self.batches)
                         best_fit = self.get_fitness_of_solution()
                 else:
                     self.batches = copy.deepcopy(curr_sol)  # don´t accept new solution and stick with the current one
                     k += 1
+                    iter_flag += 1
+                    print("iter_flag:", iter_flag)
             iters += 1
             t = time.time() - starttime
         self.batches = best_sol
         print("best fitness: ", best_fit)
-
-
 
 if __name__ == "__main__":
     #SKUS = ["24"]  # options: 24 and 360
@@ -1532,7 +1537,9 @@ if __name__ == "__main__":
     SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
     NUM_ORDERSS = [10, 20]  
     MEANS = ["1x6", "5"]  #"5",
-    ITERS_NUMS = [100, 1000, 10000, 100000, 1000000]
+    ITER_NUM = 5000
+    NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
+    K_MAX_LIST = [2, 3, 4]
 
     instance_sols = {}
     model_sols = {}
@@ -1558,9 +1565,10 @@ if __name__ == "__main__":
                     sols_and_runtimes = {}
                     #runtimes = [0, 4, 8, 13, 20, 30, 40, 50, 60, 80, 100, 120]
                     #runtimes=[0]
-                    runtimes=[1800]
+                    runtimes=[7200]
                     for runtime in runtimes:
-                        for ITER_NUM_ITEM in ITERS_NUMS:
+                        for NO_IMPROVE_STEPS_ITEM in NO_IMPROVE_STEPS_LIST:
+                            starttime = time.time()
                             np.random.seed(523381)
                             if runtime == 0:
                                 ils = GreedyMixedShelves()
@@ -1570,17 +1578,26 @@ if __name__ == "__main__":
                                 #ils.reduced_vns(max_iters=1500, t_max=runtime, k_max=3)
                                 #ils.perform_ils(num_iters=1500, t_max=runtime)
                                 vns = VariableNeighborhoodSearch()
-                                vns.reduced_vns(ITER_NUM_ITEM, runtime, 2)
+                                vns.reduced_vns(max_iters=ITER_NUM, t_max=runtime, k_max=3, no_improve_steps=NO_IMPROVE_STEPS_ITEM)
 
                             STORAGE_STRATEGY = "dedicated" if vns.is_storage_dedicated else "mixed"
                             print("Now optimizing: SKU={}; Order={}; Subscript={}".format(SKU, NUM_ORDERS, SUBSCRIPT))
                             vns.write_solution_to_xml(
-                                'solutions/orders_{}_mean_{}_sku_{}{}_{}_iter_{}.xml'.format(str(NUM_ORDERS), MEAN, SKU,
-                                                                                     SUBSCRIPT, STORAGE_STRATEGY, ITER_NUM_ITEM)
+                                'solutions/orders_{}_mean_{}_sku_{}{}_{}_no_improve_{}.xml'.format(str(NUM_ORDERS), MEAN, SKU,
+                                                                                     SUBSCRIPT, STORAGE_STRATEGY, NO_IMPROVE_STEPS_ITEM)
                             )
-                    #        sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
-                    #                                       batch in vns.batches.values()})
-                    #print(sols_and_runtimes)
+                            sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
+                                                           batch in vns.batches.values()})
+                            pickle_file_path = "solutions/" + "orders_" + str(NUM_ORDERS) + "_mean_" + str(MEAN) + "_sku_" + str(SKU) + str(SUBSCRIPT) + "_" \
+                                + str(STORAGE_STRATEGY) + "_no_improve_" + str(NO_IMPROVE_STEPS_ITEM) + "_result" + ".txt"
+                            pickle_file = open(pickle_file_path, "w") 
+                            t = time.time() - starttime
+                            print(sols_and_runtimes, file = pickle_file)
+                            print(t, file = pickle_file)
+
+                            #pickle.dump(sols_and_runtimes, pickle_file, protocol=pickle.HIGHEST_PROTOCOL)                                                                                                                                               
+                            pickle_file.close()
+                            #print("sols_and_runtimes", sols_and_runtimes)
                     #instance_sols[(SKU, SUBSCRIPT, NUM_ORDERS)] = sols_and_runtimes
                     ##model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "ILS")] = ils.get_fitness_of_solution()
                     #model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "VNS")] = vns.get_fitness_of_solution()
