@@ -1549,16 +1549,16 @@ if __name__ == "__main__":
     #MEANS = ["1x6"]  #"5",
 
     #SKUS = [str(args.sku)]
+
     #SKUS = ["24"]  # options: 24 and 360
+    #SKUS = ["360"]  # options: 24 and 360
+    #SKUS = ["24", "360"]  # options: 24 and 360
     SKUS = ["360"]  # options: 24 and 360
-    #SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
-    SUBSCRIPTS = ["_b"]  #, "_a", "_b"
+    SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
     NUM_ORDERSS = [10, 20]  
-    #MEANS = ["1x6", "5"]  #"5",
-    MEANS = ["5"]  #"5",
+    MEANS = ["1x6", "5"]  #"5",
     ITER_NUM = 5000
     NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
-    K_MAX_LIST = [2, 3, 4]
 
     instance_sols = {}
     model_sols = {}

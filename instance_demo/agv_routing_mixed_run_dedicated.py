@@ -1533,7 +1533,8 @@ if __name__ == "__main__":
     #NUM_ORDERSS = [100]  # [10,
     #MEANS = ["1x6"]  #"5",
 
-    SKUS = ["24", "360"]  # options: 24 and 360
+    #SKUS = ["24"]  # options: 24 and 360
+    SKUS = ["360"]  # options: 24 and 360
     SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
     NUM_ORDERSS = [10, 20]  
     MEANS = ["1x6", "5"]  #"5",
