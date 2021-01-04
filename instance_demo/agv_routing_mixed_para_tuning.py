@@ -1527,7 +1527,7 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-output', required=True)
-    #parser.add_argument('-sku', required=True)
+    parser.add_argument('-sku', required=True)
     parser.add_argument('-dedicated', dest='dedicated',
                        action='store_true',
                        help='dedicated shevels')
@@ -1535,7 +1535,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print('#################################')
     print(f'## output path: {args.output}')
-    #print(f'## sku: {args.sku}')
+    print(f'## sku: {args.sku}')
     print('#################################')
 
     #SKUS = ["24"]  # options: 24 and 360
@@ -1548,17 +1548,23 @@ if __name__ == "__main__":
     #NUM_ORDERSS = [100]  # [10,
     #MEANS = ["1x6"]  #"5",
 
-    #SKUS = [str(args.sku)]
+    SKUS = [str(args.sku)]
+
+    SUBSCRIPTS = ["_a"]  #, "_a", "_b"
+    NUM_ORDERSS = [10]  
+    MEANS = ["5"]  #"5",
+    ITER_NUM = 5000
+    NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
 
     #SKUS = ["24"]  # options: 24 and 360
     #SKUS = ["360"]  # options: 24 and 360
     #SKUS = ["24", "360"]  # options: 24 and 360
-    SKUS = ["360"]  # options: 24 and 360
-    SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
-    NUM_ORDERSS = [10, 20]  
-    MEANS = ["1x6", "5"]  #"5",
-    ITER_NUM = 5000
-    NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
+    #SKUS = ["360"]  # options: 24 and 360
+    #SUBSCRIPTS = ["_b"]  #, "_a", "_b"
+    #NUM_ORDERSS = [10, 20]  
+    #MEANS = ["1x6", "5"]  #"5",
+    #ITER_NUM = 5000
+    #NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
 
     instance_sols = {}
     model_sols = {}
