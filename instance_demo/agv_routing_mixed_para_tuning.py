@@ -1524,19 +1524,74 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
         self.batches = best_sol
         print("best fitness: ", best_fit)
 
+def convert_to_cmd(str_file_name):
+    print("convert_to_cmd")
+    cmd_list = []
+    # orders_20_mean_1x6_sku_360_a_dedicated_no_improve_400.xml
+    # 0      1  2    3   4   5   6 7         8  9       10              
+    str_list = str_file_name.split('_')
+ 
+    str_num_orderss = str_list[1]
+    str_means = str_list[3]
+    str_sku = str_list[5]
+    str_subscripts = str_list[6]
+    str_dedicated_or_mixed = str_list[7]
+    str_step = str_list[10]
+    cmd_list.append(str_num_orderss)#0
+    cmd_list.append(str_means)#1
+    cmd_list.append(str_sku)#2
+    cmd_list.append(str_subscripts)#3
+    cmd_list.append(str_dedicated_or_mixed)#4
+    cmd_list.append(str_step)#5
+    return cmd_list
+
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-output', required=True)
-    parser.add_argument('-sku', required=True)
-    parser.add_argument('-dedicated', dest='dedicated',
-                       action='store_true',
-                       help='dedicated shevels')
-
+    parser.add_argument('-file', required=True)
     args = parser.parse_args()
-    print('#################################')
-    print(f'## output path: {args.output}')
-    print(f'## sku: {args.sku}')
-    print('#################################')
+    str_file_name = str(args.file)
+    #str_file_name = "orders_20_mean_1x6_sku_360_a_mixed_no_improve_100"
+    cmd_list = convert_to_cmd(str_file_name)
+    print(cmd_list)
+
+    SKUS = [str(cmd_list[2])]
+    SUBSCRIPTS = [str('_' + cmd_list[3])]  #, "_a", "_b"
+    NUM_ORDERSS = [str(cmd_list[0])]  
+    MEANS = [str(cmd_list[1])]  #"5",
+    NO_IMPROVE_STEPS_LIST = [int(str(cmd_list[5]))]
+    ITER_NUM = 5000
+
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument('-output', required=True)
+    #parser.add_argument('-sku', required=True)
+    #parser.add_argument('-subscripts', required=True)
+    #parser.add_argument('-num_orderss', required=True)
+    #parser.add_argument('-means', required=True)
+    #parser.add_argument('-step', required=True)
+    
+    #parser.add_argument('-dedicated', dest='dedicated',
+    #                   action='store_true',
+    #                   help='dedicated shevels')
+
+    #args = parser.parse_args()
+    #print('#################################')
+    #print(f'## output path: {args.output}')
+    #print(f'## sku: {args.sku}')
+    #print(f'## subscripts: {args.subscripts}')
+    #print(f'## num_orderss: {args.num_orderss}')
+    #print(f'## means: {args.means}')
+    #print(f'## step: {args.step}')
+    #print(f'## dedicated: {args.dedicated}')
+    #print('#################################')
+
+    #SKUS = [str(args.sku)]
+    #SUBSCRIPTS = [str(args.subscripts)]  #, "_a", "_b"
+    #NUM_ORDERSS = [str(args.num_orderss)]  
+    #MEANS = [str(args.means)]  #"5",
+    #NO_IMPROVE_STEPS_LIST = [int(args.step)]
+    #ITER_NUM = 5000
 
     #SKUS = ["24"]  # options: 24 and 360
     #SUBSCRIPTS = ["_b"]  #, "_a", "_b"
@@ -1548,13 +1603,13 @@ if __name__ == "__main__":
     #NUM_ORDERSS = [100]  # [10,
     #MEANS = ["1x6"]  #"5",
 
-    SKUS = [str(args.sku)]
+    #SKUS = [str(args.sku)]
 
-    SUBSCRIPTS = ["_a"]  #, "_a", "_b"
-    NUM_ORDERSS = [10]  
-    MEANS = ["5"]  #"5",
-    ITER_NUM = 5000
-    NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
+    #SUBSCRIPTS = ["_a"]  #, "_a", "_b"
+    #NUM_ORDERSS = [10]  
+    #MEANS = ["5"]  #"5",
+    #ITER_NUM = 5000
+    #NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
 
     #SKUS = ["24"]  # options: 24 and 360
     #SKUS = ["360"]  # options: 24 and 360
@@ -1582,12 +1637,20 @@ if __name__ == "__main__":
                     instances[24, 2] = r'data/sku{}/layout_sku_{}_2.xml'.format(SKU, SKU)
 
                     storagePolicies = {}
-                    if args.dedicated:
+                    #if args.dedicated:
+                    #    storagePolicies['dedicated'] = 'data/sku{}/pods_items_dedicated_1.txt'.format(SKU)
+                    #    print("##dedicated!")                        
+                    #else:
+                    #    storagePolicies['mixed'] = 'data/sku{}/pods_items_mixed_shevels_1-5.txt'.format(SKU)
+                    #    print("##mixed!")
+
+                    if cmd_list[4] == "dedicated":
                         storagePolicies['dedicated'] = 'data/sku{}/pods_items_dedicated_1.txt'.format(SKU)
                         print("##dedicated!")                        
                     else:
                         storagePolicies['mixed'] = 'data/sku{}/pods_items_mixed_shevels_1-5.txt'.format(SKU)
                         print("##mixed!")
+                    
 
                     orders = {}
                     orders['{}_5'.format(str(NUM_ORDERS))] = r'data/sku{}/orders_{}_mean_{}_sku_{}{}.xml'.format(SKU, str(NUM_ORDERS), MEAN, SKU, SUBSCRIPT)
@@ -1607,7 +1670,8 @@ if __name__ == "__main__":
                                 #ils.reduced_vns(max_iters=1500, t_max=runtime, k_max=3)
                                 #ils.perform_ils(num_iters=1500, t_max=runtime)
                                 vns = VariableNeighborhoodSearch()
-                                vns.reduced_vns(max_iters=ITER_NUM, t_max=runtime, k_max=3, no_improve_steps=NO_IMPROVE_STEPS_ITEM)
+                                #vns.reduced_vns(max_iters=ITER_NUM, t_max=runtime, k_max=3, no_improve_steps=NO_IMPROVE_STEPS_ITEM)
+                                vns.reduced_vns(max_iters=ITER_NUM, t_max=runtime, k_max=2, no_improve_steps=NO_IMPROVE_STEPS_ITEM)
 
                             STORAGE_STRATEGY = "dedicated" if vns.is_storage_dedicated else "mixed"
                             print("Now optimizing: SKU={}; Order={}; Subscript={}".format(SKU, NUM_ORDERS, SUBSCRIPT))

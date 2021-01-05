@@ -184,9 +184,9 @@ def getOutputResults(path_list):
 
     return file_cost_time_dict_avg
 
-def compareFiles():
+def compareFiles(str_path):
     print("compare files:")
-    gen_name_list = getGenFilesNameList(directory = r"C:\GitHub\cobot_shortest_path\instance_demo\test\0", extension = "xml")
+    gen_name_list = getGenFilesNameList(directory = str_path , extension = "xml")
     idx = 1
     str_gen_name_list = []
     for name in gen_name_list:
@@ -240,16 +240,23 @@ def compareFiles():
     for name in diff_list:
         print(idx, ": ", name)
         idx += 1
+    return diff_list
 
 if __name__ == "__main__":
-    #compareFiles()
-    path_list = []
-    path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\0")
-    path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\1")
-    path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\2")
-    path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\3")
-    path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\4")
-    file_cost_time_dict = getOutputResults(path_list)
+    str_path = r"C:\GitHub\cobot_shortest_path\instance_demo\test\0"
+    diff_list = compareFiles(str_path)
+    for item in diff_list:
+        item_list = item.split('.')
+        folder = "x0"
+        print("python agv_routing_mixed_para_tuning.py -output " + folder + " -file " + item_list[0])
+
+    #path_list = []
+    #path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\0")
+    #path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\1")
+    #path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\2")
+    #path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\3")
+    #path_list.append(r"C:\GitHub\cobot_shortest_path\instance_demo\test\4")
+    #file_cost_time_dict = getOutputResults(path_list)
 
     #parser = argparse.ArgumentParser()
     #parser.add_argument('-output', required=True)
