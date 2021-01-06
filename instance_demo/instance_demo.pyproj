@@ -34,6 +34,7 @@
     </Compile>
     <Compile Include="tests.py" />
     <Compile Include="utils.py" />
+    <Compile Include="xor_agv_routing_mixed.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
