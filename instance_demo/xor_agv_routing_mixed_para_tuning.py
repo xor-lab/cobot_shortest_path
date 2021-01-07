@@ -37,27 +37,29 @@ from collections import Counter
 import pandas as pd
 import itertools
 
+import argparse
+
 # ------------------------------------------- CONFIG -------------------------------------------------------------------
 SKU = "24"  # options: 24 and 360
 SUBSCRIPT = "_a"
 NUM_ORDERS = 10
 
-layoutFile = r'data/layout/1-1-1-2-1.xlayo'
-podInfoFile = 'data/sku{}/pods_infos.txt'.format(SKU)
+layoutFile = r'data_new/layout/1-1-1-2-1.xlayo'
+podInfoFile = 'data_new/sku{}/pods_infos.txt'.format(SKU)
 
 instances = {}
-instances[24, 2] = r'data/sku{}/layout_sku_{}_2.xml'.format(SKU, SKU)
+instances[24, 2] = r'data_new/sku{}/layout_sku_{}_2.xml'.format(SKU, SKU)
 
 storagePolicies = {}
-storagePolicies['dedicated'] = 'data/sku{}/pods_items_dedicated_1.txt'.format(SKU)
-# storagePolicies['mixed'] = 'data/sku{}/pods_items_mixed_shevels_1-5.txt'.format(SKU)
+storagePolicies['dedicated'] = 'data_new/sku{}/pods_items_dedicated_1.txt'.format(SKU)
+# storagePolicies['mixed'] = 'data_new/sku{}/pods_items_mixed_shevels_1-5.txt'.format(SKU)
 
 orders = {}
-orders['{}_5'.format(str(NUM_ORDERS))] = r'data/sku{}/orders_{}_mean_5_sku_{}{}.xml'.format(SKU, str(NUM_ORDERS), SKU,
+orders['{}_5'.format(str(NUM_ORDERS))] = r'data_new/sku{}/orders_{}_mean_5_sku_{}{}.xml'.format(SKU, str(NUM_ORDERS), SKU,
                                                                                             SUBSCRIPT)
 
 
-# orders['10_5'] = r'data/sku{}/orders_10_mean_1x6_sku_{}.xml'.format(SKU, SKU)
+# orders['10_5'] = r'data_new/sku{}/orders_10_mean_1x6_sku_{}.xml'.format(SKU, SKU)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -107,7 +109,7 @@ class WarehouseDateProcessing():
 
     def CalculateDistance(self):
 
-        file_path = r'data/distances/' + os.path.splitext(os.path.basename(self.Warehouse.InstanceFile))[0] + '.json'
+        file_path = r'data_new/distances/' + os.path.splitext(os.path.basename(self.Warehouse.InstanceFile))[0] + '.json'
 
         if not path.exists(file_path):
             # Create d_ij
@@ -1287,7 +1289,7 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
             weight_dict = self.get_weight_per_batch()
         print("fitness after perturbation: ", self.get_fitness_of_solution())
 
-    def reduced_vns(self, max_iters, t_max, k_max):
+    def reduced_vns(self, max_iters, t_max, k_max, no_improve_steps):
         """
         :param max_iters:  maximum number of iterations
         :param t_max: maximum cpu time
@@ -1301,10 +1303,14 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
         curr_sol = copy.deepcopy(self.batches)
         best_sol = copy.deepcopy(curr_sol)
         item_id_pod_id_dict_copy = copy.deepcopy(self.item_id_pod_id_dict)
+        # hli begin
+        iter_flag = 0
+        # hli end
+
         while iters < max_iters and t < t_max:
             print("Start iteration {} of VNS".format(str(iters)))
             k = 1
-            while k <= k_max:
+            while k <= k_max and iter_flag < no_improve_steps:
                 # if np.random.random() < .5:
                 self.shake(k)
                 improvement = True
@@ -1329,6 +1335,11 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
                         curr_sol = copy.deepcopy(self.batches)
                         item_id_pod_id_dict_copy = copy.deepcopy(self.item_id_pod_id_dict)
                         k = 1
+                        # hli begin
+                        iter_flag = 0
+                        print("iter_flag reset!")
+                        # hli end
+                        
                         if curr_fit < best_fit:
                             best_sol = copy.deepcopy(self.batches)
                             best_fit = self.get_fitness_of_solution()
@@ -1337,6 +1348,11 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
                             curr_sol)  # don´t accept new solution and stick with the current one
                         self.item_id_pod_id_dict = copy.deepcopy(item_id_pod_id_dict_copy)
                         k += 1
+                        # hli begin
+                        iter_flag += 1
+                        print("iter_flag:", iter_flag)
+                        # hli end
+
             iters += 1
             t = time.time() - starttime
         self.batches = best_sol
@@ -1344,10 +1360,38 @@ class VariableNeighborhoodSearch(IteratedLocalSearchMixed):
 
 
 if __name__ == "__main__":
-    SKUS = ["360"]  # options: 24 and 360
-    SUBSCRIPTS = [""]  # , "_a", "_b"
-    NUM_ORDERSS = [20]  # [10,
-    MEANS = ["5"]  # "1x6",, "5"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-output', required=True)
+    #parser.add_argument('-sku', required=True)
+    #parser.add_argument('-subscripts', required=True)
+    #parser.add_argument('-num_orderss', required=True)
+    #parser.add_argument('-means', required=True)
+    #parser.add_argument('-step', required=True)
+    
+    parser.add_argument('-dedicated', dest='dedicated',
+                       action='store_true',
+                       help='dedicated shevels')
+
+    args = parser.parse_args()
+    print('#################################')
+    print(f'## output path: {args.output}')
+    #print(f'## sku: {args.sku}')
+    #print(f'## subscripts: {args.subscripts}')
+    #print(f'## num_orderss: {args.num_orderss}')
+    #print(f'## means: {args.means}')
+    #print(f'## step: {args.step}')
+    print(f'## dedicated: {args.dedicated}')
+    print('#################################')
+
+    SKUS = ["24", "360"]  # options: 24 and 360
+    SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
+    NUM_ORDERSS = [10, 20]  
+    MEANS = ["1x6", "5"] 
+    ITER_NUM = 5000
+    NO_IMPROVE_STEPS_LIST = [100, 200, 300, 400]
+    K_MAX_LIST = [3, 4]
+
     instance_sols = {}
     model_sols = {}
     for SKU in SKUS:
@@ -1355,62 +1399,126 @@ if __name__ == "__main__":
             for NUM_ORDERS in NUM_ORDERSS:
                 for MEAN in MEANS:
                     # CAUTION: SCRIPT WONT RUN IF ALL SOLUTIONS ARE WRITTEN AND THIS IS NOT PUT IN COMMENTS
-                    # if os.path.isfile('solutions/final/orders_{}_mean_5_sku_{}{}_{}.xml'.format(str(NUM_ORDERS), SKU, SUBSCRIPT, "mixed")):
+                    #if os.path.isfile('solutions/final/orders_{}_mean_5_sku_{}{}_{}.xml'.format(str(NUM_ORDERS), SKU, SUBSCRIPT, "mixed")):
                     #    continue  # skip iteration if the instance has been solved already
-                    # try:
-                    layoutFile = r'data/layout/1-1-1-2-1.xlayo'
-                    podInfoFile = 'data/sku{}/pods_infos.txt'.format(SKU)
+                    #try:
+                    layoutFile = r'data_new/layout/1-1-1-2-1.xlayo'
+                    podInfoFile = 'data_new/sku{}/pods_infos.txt'.format(SKU)
                     instances = {}
-                    instances[24, 2] = r'data/sku{}/layout_sku_{}_2.xml'.format(SKU, SKU)
+                    instances[24, 2] = r'data_new/sku{}/layout_sku_{}_2.xml'.format(SKU, SKU)
 
                     storagePolicies = {}
-                    # storagePolicies['dedicated'] = 'data/sku{}/pods_items_dedicated_1.txt'.format(SKU)
-                    # storagePolicies['mixed'] = 'data/sku{}/pods_items_mixed_shevels_1-5.txt'.format(SKU)
-                    storagePolicies['mixed'] = 'data/sku{}/pods_items_mixed_shevels_1-10.txt'.format(SKU)
+                    if args.dedicated:
+                        storagePolicies['dedicated'] = 'data_new/sku{}/pods_items_dedicated_1.txt'.format(SKU)
+                        print("##dedicated!")                        
+                    else:
+                        storagePolicies['mixed'] = 'data_new/sku{}/pods_items_mixed_shevels_1-5.txt'.format(SKU)
+                        print("##mixed!")                  
 
                     orders = {}
-                    orders['{}_5'.format(str(NUM_ORDERS))] = r'data/sku{}/orders_{}_mean_{}_sku_{}{}.xml'.format(SKU,
-                                                                                                                 str(
-                                                                                                                     NUM_ORDERS),
-                                                                                                                 MEAN,
-                                                                                                                 SKU,
-                                                                                                                 SUBSCRIPT)
+                    orders['{}_5'.format(str(NUM_ORDERS))] = r'data_new/sku{}/orders_{}_mean_{}_sku_{}{}.xml'.format(SKU, str(NUM_ORDERS), MEAN, SKU, SUBSCRIPT)
                     sols_and_runtimes = {}
-                    runtimes = [0, 4, 8, 13, 20, 30, 40, 50, 60, 80, 100, 120]
-                    runtimes = [320]
+                    #runtimes = [0, 4, 8, 13, 20, 30, 40, 50, 60, 80, 100, 120]
+                    #runtimes=[0]
+                    runtimes=[7200]
                     for runtime in runtimes:
-                        np.random.seed(523381)
-                        if runtime == 0:
-                            ils = GreedyMixedShelves()
-                            ils.apply_greedy_heuristic()
-                        else:
-                            ils = VariableNeighborhoodSearch()
-                            STORAGE_STRATEGY = "dedicated" if ils.is_storage_dedicated else "mixed"
-                            print("Now optimizing: SKU={}; Order={}; Subscript={}; Mean={}; Storage={}".format(SKU,
-                                                                                                               NUM_ORDERS,
-                                                                                                               SUBSCRIPT,
-                                                                                                               MEAN,
-                                                                                                               STORAGE_STRATEGY))
-                            ils.reduced_vns(max_iters=1500, t_max=runtime, k_max=3)
-                            # ils.perform_ils(num_iters=1500, t_max=runtime)
-                            # vns = VariableNeighborhoodSearch()
-                            # vns.reduced_vns(1500, runtime, 2)
-                        STORAGE_STRATEGY = "dedicated" if ils.is_storage_dedicated else "mixed"
-                        ils.write_solution_to_xml(
-                            'solutions/orders_{}_mean_{}_sku_{}{}_{}.xml'.format(str(NUM_ORDERS), MEAN, SKU,
-                                                                                 SUBSCRIPT, STORAGE_STRATEGY)
-                        )
-                        # sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
-                        #                               batch in vns.batches.values()})
-                    print(sols_and_runtimes)
-                    instance_sols[(SKU, SUBSCRIPT, NUM_ORDERS)] = sols_and_runtimes
-                    model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "ILS")] = ils.get_fitness_of_solution()
-                    # model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "VNS")] = vns.get_fitness_of_solution()
-                    # except Exception as e:
-                    #    print(e)
-                    #    continue
+                        for NO_IMPROVE_STEPS_ITEM in NO_IMPROVE_STEPS_LIST:
+                            for K_MAX_ITEM in K_MAX_LIST:
+                                starttime = time.time()
+                                np.random.seed(523381)
+                                if runtime == 0:
+                                    ils = GreedyMixedShelves()
+                                    ils.apply_greedy_heuristic()
+                                else:
+                                    vns = VariableNeighborhoodSearch()
+                                    vns.reduced_vns(max_iters=ITER_NUM, t_max=runtime, k_max=K_MAX_ITEM, no_improve_steps=NO_IMPROVE_STEPS_ITEM)
 
-    # with open('../analyse_solution/solutions/mixed360_random_ls_not_random_twoopt.pickle', 'wb') as handle:
-    #    pickle.dump(instance_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    #with open('../analyse_solution/solutions/mixed_fitness_ils_vns.pickle', 'wb') as handle:
-    #    pickle.dump(model_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                                STORAGE_STRATEGY = "dedicated" if vns.is_storage_dedicated else "mixed"
+                                print("Now optimizing: SKU={}; Order={}; Subscript={}".format(SKU, NUM_ORDERS, SUBSCRIPT))
+                                vns.write_solution_to_xml(
+                                    'solutions/{}/orders_{}_mean_{}_sku_{}{}_{}_no_improve_{}_kmax_.xml'.format(str(args.output), str(NUM_ORDERS), MEAN, SKU,
+                                                                                         SUBSCRIPT, STORAGE_STRATEGY, NO_IMPROVE_STEPS_ITEM, str(K_MAX_ITEM))
+                                )
+                                sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
+                                                               batch in vns.batches.values()})
+                                pickle_file_path = "solutions/" + str(args.output) + "/orders_" + str(NUM_ORDERS) + "_mean_" + str(MEAN) + "_sku_" + str(SKU) + str(SUBSCRIPT) + "_" \
+                                    + str(STORAGE_STRATEGY) + "_no_improve_" + str(NO_IMPROVE_STEPS_ITEM) + "_kmax_" + str(K_MAX_ITEM) + "_result" + ".txt"
+                                pickle_file = open(pickle_file_path, "w") 
+                                t = time.time() - starttime
+                                print(sols_and_runtimes, file = pickle_file)
+                                print(t, file = pickle_file)
+
+                                pickle_file.close()
+                                #print("sols_and_runtimes", sols_and_runtimes)
+
+#if __name__ == "__main__":
+#    SKUS = ["360"]  # options: 24 and 360
+#    SUBSCRIPTS = [""]  # , "_a", "_b"
+#    NUM_ORDERSS = [20]  # [10,
+#    MEANS = ["5"]  # "1x6",, "5"
+#    instance_sols = {}
+#    model_sols = {}
+#    for SKU in SKUS:
+#        for SUBSCRIPT in SUBSCRIPTS:
+#            for NUM_ORDERS in NUM_ORDERSS:
+#                for MEAN in MEANS:
+#                    # CAUTION: SCRIPT WONT RUN IF ALL SOLUTIONS ARE WRITTEN AND THIS IS NOT PUT IN COMMENTS
+#                    # if os.path.isfile('solutions/final/orders_{}_mean_5_sku_{}{}_{}.xml'.format(str(NUM_ORDERS), SKU, SUBSCRIPT, "mixed")):
+#                    #    continue  # skip iteration if the instance has been solved already
+#                    # try:
+#                    layoutFile = r'data/layout/1-1-1-2-1.xlayo'
+#                    podInfoFile = 'data/sku{}/pods_infos.txt'.format(SKU)
+#                    instances = {}
+#                    instances[24, 2] = r'data/sku{}/layout_sku_{}_2.xml'.format(SKU, SKU)
+
+#                    storagePolicies = {}
+#                    # storagePolicies['dedicated'] = 'data/sku{}/pods_items_dedicated_1.txt'.format(SKU)
+#                    # storagePolicies['mixed'] = 'data/sku{}/pods_items_mixed_shevels_1-5.txt'.format(SKU)
+#                    storagePolicies['mixed'] = 'data/sku{}/pods_items_mixed_shevels_1-10.txt'.format(SKU)
+
+#                    orders = {}
+#                    orders['{}_5'.format(str(NUM_ORDERS))] = r'data/sku{}/orders_{}_mean_{}_sku_{}{}.xml'.format(SKU,
+#                                                                                                                 str(
+#                                                                                                                     NUM_ORDERS),
+#                                                                                                                 MEAN,
+#                                                                                                                 SKU,
+#                                                                                                                 SUBSCRIPT)
+#                    sols_and_runtimes = {}
+#                    runtimes = [0, 4, 8, 13, 20, 30, 40, 50, 60, 80, 100, 120]
+#                    runtimes = [320]
+#                    for runtime in runtimes:
+#                        np.random.seed(523381)
+#                        if runtime == 0:
+#                            ils = GreedyMixedShelves()
+#                            ils.apply_greedy_heuristic()
+#                        else:
+#                            ils = VariableNeighborhoodSearch()
+#                            STORAGE_STRATEGY = "dedicated" if ils.is_storage_dedicated else "mixed"
+#                            print("Now optimizing: SKU={}; Order={}; Subscript={}; Mean={}; Storage={}".format(SKU,
+#                                                                                                               NUM_ORDERS,
+#                                                                                                               SUBSCRIPT,
+#                                                                                                               MEAN,
+#                                                                                                               STORAGE_STRATEGY))
+#                            ils.reduced_vns(max_iters=1500, t_max=runtime, k_max=3)
+#                            # ils.perform_ils(num_iters=1500, t_max=runtime)
+#                            # vns = VariableNeighborhoodSearch()
+#                            # vns.reduced_vns(1500, runtime, 2)
+#                        STORAGE_STRATEGY = "dedicated" if ils.is_storage_dedicated else "mixed"
+#                        ils.write_solution_to_xml(
+#                            'solutions/orders_{}_mean_{}_sku_{}{}_{}.xml'.format(str(NUM_ORDERS), MEAN, SKU,
+#                                                                                 SUBSCRIPT, STORAGE_STRATEGY)
+#                        )
+#                        # sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
+#                        #                               batch in vns.batches.values()})
+#                    print(sols_and_runtimes)
+#                    instance_sols[(SKU, SUBSCRIPT, NUM_ORDERS)] = sols_and_runtimes
+#                    model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "ILS")] = ils.get_fitness_of_solution()
+#                    # model_sols[(SKU, SUBSCRIPT, NUM_ORDERS, "VNS")] = vns.get_fitness_of_solution()
+#                    # except Exception as e:
+#                    #    print(e)
+#                    #    continue
+
+#    # with open('../analyse_solution/solutions/mixed360_random_ls_not_random_twoopt.pickle', 'wb') as handle:
+#    #    pickle.dump(instance_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
+#    #with open('../analyse_solution/solutions/mixed_fitness_ils_vns.pickle', 'wb') as handle:
+#    #    pickle.dump(model_sols, handle, protocol=pickle.HIGHEST_PROTOCOL)
