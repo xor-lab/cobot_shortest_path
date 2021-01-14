@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0c1b2faf-ac4d-42b6-8552-e6afe7a261a5</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>xor_agv_routing_mixed_para_tuning.py</StartupFile>
+    <StartupFile>results_proc.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -34,7 +34,10 @@
     </Compile>
     <Compile Include="tests.py" />
     <Compile Include="utils.py" />
+    <Compile Include="xor_agv_360_m10.py" />
+    <Compile Include="xor_agv_add.py" />
     <Compile Include="xor_agv_routing_mixed_para_tuning.py" />
+    <Compile Include="xor_agv_routing_mixed_para_tuning_ab.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

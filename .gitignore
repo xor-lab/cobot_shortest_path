@@ -130,3 +130,15 @@ dmypy.json
 *.txt
 *.json
 *.xml
+*.xinst
+*.zip
+*.json
+*.xml
+*.txt
+*.png
+*.xitem
+*.sol
+*.mst
+*.xlayo
+*.tupledict
+instance_demo/.vs/instance_demo/v16/.suo

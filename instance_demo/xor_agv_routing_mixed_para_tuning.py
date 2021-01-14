@@ -1384,7 +1384,8 @@ if __name__ == "__main__":
     print(f'## dedicated: {args.dedicated}')
     print('#################################')
 
-    SKUS = ["24", "360"]  # options: 24 and 360
+    SKUS = ["360"]  # options: 24 and 360
+    #SKUS = ["24", "360"]  # options: 24 and 360
     SUBSCRIPTS = ["", "_a", "_b"]  #, "_a", "_b"
     NUM_ORDERSS = [10, 20]  
     MEANS = ["1x6", "5"] 
@@ -1436,7 +1437,7 @@ if __name__ == "__main__":
                                 STORAGE_STRATEGY = "dedicated" if vns.is_storage_dedicated else "mixed"
                                 print("Now optimizing: SKU={}; Order={}; Subscript={}".format(SKU, NUM_ORDERS, SUBSCRIPT))
                                 vns.write_solution_to_xml(
-                                    'solutions/{}/orders_{}_mean_{}_sku_{}{}_{}_no_improve_{}_kmax_.xml'.format(str(args.output), str(NUM_ORDERS), MEAN, SKU,
+                                    'solutions/{}/orders_{}_mean_{}_sku_{}{}_{}_no_improve_{}_kmax_{}.xml'.format(str(args.output), str(NUM_ORDERS), MEAN, SKU,
                                                                                          SUBSCRIPT, STORAGE_STRATEGY, NO_IMPROVE_STEPS_ITEM, str(K_MAX_ITEM))
                                 )
                                 sols_and_runtimes[runtime] = (vns.get_fitness_of_solution(), {batch.ID: batch.route for
