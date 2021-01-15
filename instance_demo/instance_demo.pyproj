@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0c1b2faf-ac4d-42b6-8552-e6afe7a261a5</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>results_proc.py</StartupFile>
+    <StartupFile>xor_agv_3240.py </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -12,6 +12,12 @@
     <Name>instance_demo</Name>
     <RootNamespace>instance_demo</RootNamespace>
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <CommandLineArguments>-output 1h -subscripts _ -num_orderss 100 -means 1x6 -mixed_shevels</CommandLineArguments>
+    <InterpreterArguments>
+    </InterpreterArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,9 +30,7 @@
   <ItemGroup>
     <Compile Include="agv_routing_dedicated.py" />
     <Compile Include="agv_routing_mixed.py" />
-    <Compile Include="agv_routing_mixed_1_10.py" />
     <Compile Include="agv_routing_mixed_para_tuning.py" />
-    <Compile Include="agv_routing_mixed_run_dedicated.py" />
     <Compile Include="agv_routing_split_orders.py" />
     <Compile Include="instance_demo.py" />
     <Compile Include="results_proc.py">
@@ -34,10 +38,10 @@
     </Compile>
     <Compile Include="tests.py" />
     <Compile Include="utils.py" />
+    <Compile Include="xor_agv_3240.py" />
     <Compile Include="xor_agv_360_m10.py" />
     <Compile Include="xor_agv_add.py" />
     <Compile Include="xor_agv_routing_mixed_para_tuning.py" />
-    <Compile Include="xor_agv_routing_mixed_para_tuning_ab.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
