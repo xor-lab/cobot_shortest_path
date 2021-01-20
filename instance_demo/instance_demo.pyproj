@@ -15,7 +15,8 @@
     <IsWindowsApplication>False</IsWindowsApplication>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
-    <CommandLineArguments>-output 1h -subscripts _ -num_orderss 100 -means 1x6 -mixed_shevels</CommandLineArguments>
+    <CommandLineArguments>
+    </CommandLineArguments>
     <InterpreterArguments>
     </InterpreterArguments>
   </PropertyGroup>
@@ -40,7 +41,9 @@
     <Compile Include="utils.py" />
     <Compile Include="xor_agv_3240.py" />
     <Compile Include="xor_agv_360_m10.py" />
+    <Compile Include="xor_agv_360_m10_test.py" />
     <Compile Include="xor_agv_add.py" />
+    <Compile Include="xor_agv_3240_fast.py" />
     <Compile Include="xor_agv_routing_mixed_para_tuning.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
